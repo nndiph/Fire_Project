@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - PyroGuard System</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=3">
+</head>
+<body class="login-body">
+
+    <div class="login-card">
+        <div class="login-logo-circle">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        
+        <h1 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; color: var(--text-primary);">Sistem PyroGuard</h1>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 24px;">Portal Kontrol & Pemantauan Klinis</p>
+
+        <div class="login-security-badge">
+            <i class="fas fa-check-circle" style="color: var(--accent-green-dark);"></i>
+            KONEKSI DIENKRIPSI & AMAN
+        </div>
+
+        <form action="proses_login.php" method="POST" style="text-align: left;">
+            <div style="margin-bottom: 20px;">
+                <label for="username" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: var(--text-primary);">ID Staf / Email</label>
+                <div class="login-input-wrapper">
+                    <i class="far fa-id-badge left-icon"></i>
+                    <input type="text" id="username" name="username" class="login-input" placeholder="Masukkan ID atau Email" required>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <label for="password" style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">Kata Sandi</label>
+                    <a href="#" style="font-size: 0.85rem; font-weight: 600; color: var(--accent-green-dark); text-decoration: none;">Lupa Sandi?</a>
+                </div>
+                <div class="login-input-wrapper" style="margin-bottom: 12px;">
+                    <i class="fas fa-lock left-icon"></i>
+                    <input type="password" id="password" name="password" class="login-input" placeholder="Masukkan Kata Sandi" required>
+                    <i class="far fa-eye-slash right-icon" onclick="togglePassword()"></i>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
+                    <label style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); cursor: pointer;">
+                        <input type="checkbox" name="remember" style="accent-color: var(--accent-green-dark);"> Ingat Saya
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 6px; font-weight: 600; color: var(--text-primary);">
+                        <i class="fas fa-mobile-alt"></i> 2FA Aktif
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="login-btn">
+                Masuk Aman <i class="fas fa-arrow-right"></i>
+            </button>
+        </form>
+    </div>
+
+    <div class="login-footer-links">
+        <a href="#"><i class="fas fa-chart-line"></i> Status Sistem</a>
+        <a href="#"><i class="fas fa-headset"></i> Dukungan IT</a>
+        <a href="#"><i class="fas fa-shield-alt"></i> Kebijakan Keamanan</a>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const icon = document.querySelector('.right-icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
+        }
+    </script>
+</body>
+</html>

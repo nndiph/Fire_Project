@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyroGuard System - Sensor Data</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=4">
+</head>
+<body>
+    <!-- Header / Top Nav -->
+    <header class="top-header">
+        <div class="header-left">
+            <h1 class="brand-title">PyroGuard System</h1>
+            <div class="status-badges-group" style="display: flex; gap: 8px; align-items: center;">
+                <div class="status-badge online" id="node1-status-badge">
+                    <span class="status-dot"></span> NODE 1: ONLINE
+                </div>
+                <div class="status-badge online" id="node2-status-badge">
+                    <span class="status-dot"></span> NODE 2: ONLINE
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="icon-btn notification-btn">
+                <i class="far fa-bell"></i>
+                <span class="notification-indicator"></span>
+            </button>
+            <button class="icon-btn">
+                <i class="fas fa-cog"></i>
+            </button>
+            <div class="user-profile" id="userProfileBtn">
+                <div class="user-info">
+                    <p class="user-name">Dr. Nadhif Falah</p>
+                    <p class="user-role">System Admin</p>
+                </div>
+                <div class="user-avatar">
+                    <i class="far fa-user-circle"></i>
+                </div>
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="#" class="dropdown-item"><i class="far fa-user"></i> My Profile</a>
+                    <a href="#" class="dropdown-item"><i class="fas fa-sliders-h"></i> Account Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="logout.php" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="layout-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Control Center</h2>
+                <p id="user-node-info">Station 04 - Active</p>
+            </div>
+            
+            <nav class="nav-links">
+                <a href="index.html" class="nav-item">
+                    <i class="fas fa-th-large"></i> Dashboard
+                </a>
+                <a href="sensor_data.html" class="nav-item active">
+                    <i class="fas fa-wifi"></i> Sensor Data
+                </a>
+                <a href="suppression.html" class="nav-item">
+                    <i class="fas fa-sliders-h"></i> Kontrol
+                </a>
+                <a href="incident_logs.html" class="nav-item">
+                    <i class="fas fa-history"></i> Incident Logs
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <button class="btn-emergency" onclick="emergencyContact()">
+                    <i class="fas fa-exclamation-triangle"></i> EMERGENCY STOP
+                </button>
+                <a href="#" class="footer-link"><i class="fas fa-headset"></i> Support</a>
+                <a href="#" class="footer-link"><i class="far fa-question-circle"></i> Help</a>
+            </div>
+        </aside>
+
+        <!-- Main Content for Sensor Data -->
+        <main class="dashboard-content" style="padding: 24px; flex-grow: 1; overflow-y: auto;">
+            
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-title">
+                    <h2>Data Sensor</h2>
+                    <p>Pemantauan Kesehatan Perangkat Aktif</p>
+                </div>
+                <button class="btn-primary">
+                    <i class="fas fa-sync-alt"></i> Perbarui Data
+                </button>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="stats-row">
+                <!-- Stat 1 -->
+                <div class="card stat-card">
+                    <div class="stat-header">
+                        <p class="sub-label">TOTAL SENSOR AKTIF</p>
+                        <div class="stat-icon default"><i class="fas fa-wifi"></i></div>
+                    </div>
+                    <div class="stat-value" id="total-sensor">3</div>
+                    <div class="stat-desc" id="sensor-status-desc" style="color: var(--text-secondary);">Semua sensor berfungsi normal</div>
+                </div>
+
+                <!-- Stat 2 -->
+                <div class="card stat-card">
+                    <div class="stat-header">
+                        <p class="sub-label">STATUS ONLINE</p>
+                        <div class="stat-icon success" style="background-color: var(--accent-green-bright); color: #064e3b;"><i class="fas fa-wifi"></i></div>
+                    </div>
+                    <div class="stat-value">98.5%</div>
+                    <div class="stat-progress">
+                        <div class="bar" style="width: 98.5%;"></div>
+                    </div>
+                </div>
+
+                <!-- Stat 3: Pump Status -->
+                <div class="card stat-card" id="sd-pump-card" style="border: 1px solid var(--border-color); transition: all 0.4s ease;">
+                    <div class="stat-header">
+                        <p class="sub-label">STATUS POMPA</p>
+                        <div class="stat-icon" id="sd-pump-icon" style="background-color: #f1f5f9; color: #94a3b8; transition: all 0.4s ease;"><i class="fas fa-water"></i></div>
+                    </div>
+                    <div class="stat-value" id="sd-pump-text" style="color: #94a3b8; transition: color 0.4s ease;">STANDBY</div>
+                    <div class="stat-desc" style="color: var(--text-secondary);">Node 2 — Actuator</div>
+                </div>
+
+                <!-- Stat 4: Solenoid Status -->
+                <div class="card stat-card" id="sd-sol-card" style="border: 1px solid var(--border-color); transition: all 0.4s ease;">
+                    <div class="stat-header">
+                        <p class="sub-label">STATUS SOLENOID</p>
+                        <div class="stat-icon" id="sd-sol-icon" style="background-color: #f1f5f9; color: #94a3b8; transition: all 0.4s ease;"><i class="fas fa-faucet"></i></div>
+                    </div>
+                    <div class="stat-value" id="sd-sol-text" style="color: #94a3b8; transition: color 0.4s ease;">CLOSED</div>
+                    <div class="stat-desc" style="color: var(--text-secondary);">Node 2 — Actuator</div>
+                </div>
+            </div>
+
+            <!-- Middle Row: Chart & Alerts -->
+            <div class="middle-row">
+                <!-- Chart Card -->
+                <div class="card chart-card">
+                    <div class="chart-header">
+                        <h3>Kekuatan Sinyal & Konektivitas</h3>
+                        <div class="chart-tabs">
+                            <div class="chart-tab active">Real-time</div>
+                        </div>
+                    </div>
+                    <div class="mock-chart" id="signal-chart-container">
+                        <div class="y-axis">
+                            <span>100%</span>
+                            <span>50%</span>
+                            <span>0%</span>
+                        </div>
+                        <div class="x-axis-line"></div>
+                        <!-- Mock Bars -->
+                        <div class="chart-bar" style="height: 100%; background: var(--accent-green-bright);"></div>
+                        <div class="chart-bar" style="height: 100%; background: var(--accent-green-bright);"></div>
+                        <div class="chart-bar" style="height: 100%; background: var(--accent-green-bright);"></div>
+                        <div class="chart-bar" style="height: 100%; background: var(--accent-green-bright);"></div>
+                        <div class="chart-bar" style="height: 100%; background: var(--accent-green-bright);"></div>
+                        <div class="chart-bar" style="height: 100%; background: var(--accent-green-bright);"></div>
+                        <div class="chart-bar" style="height: 100%; background: var(--accent-green-bright);"></div>
+                        <div class="chart-bar" style="height: 100%; background: var(--accent-green-bright);"></div>
+                        <div class="chart-bar" style="height: 100%; background: var(--accent-green-bright);"></div>
+                        <div class="chart-bar" style="height: 100%; background: var(--accent-green-bright);"></div>
+                    </div>
+                </div>
+
+                <!-- Alerts Card -->
+                <div class="card alerts-card">
+                    <div class="card-header borderless" style="margin-bottom: 16px;">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Peringatan Kritis</h3>
+                    </div>
+                    <div class="alert-list" id="critical-alerts-container">
+                        <!-- Alerts dynamically updated by JS -->
+                        <div class="alert-item safe" id="no-alerts-msg">
+                            <div class="alert-header">
+                                <span class="alert-title" style="color: var(--accent-green-bright);">Sistem Normal</span>
+                            </div>
+                            <p class="alert-desc">Tidak ada peringatan kritis saat ini.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Row -->
+            <div class="card table-card">
+                <div class="table-header-row">
+                    <h3>Daftar Kesehatan Perangkat</h3>
+                    <button class="filter-btn">
+                        <i class="fas fa-filter"></i> Semua Status <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID SENSOR / LOKASI</th>
+                            <th>TIPE</th>
+                            <th>STATUS</th>
+                            <th>STATUS BATERAI</th>
+                            <th>SINYAL TERAKHIR</th>
+                            <th>SKOR KESEHATAN</th>
+                            <th>AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Row 1: NODE-1 -->
+                        <tr id="row-node1">
+                            <td>
+                                <div class="device-id">NODE-1</div>
+                                <div class="device-loc">Pusat Kontrol</div>
+                            </td>
+                            <td>Gateway Controller</td>
+                            <td><span class="status-pill safe" id="status-node1"><i class="fas fa-circle"></i> Sehat</span></td>
+                            <td><div class="battery-status"><i class="fas fa-plug"></i> 100% (AC)</div></td>
+                            <td id="time-node1">Baru saja</td>
+                            <td>
+                                <div class="health-bar-container"><div class="health-bar" id="health-node1" style="width: 100%;"></div></div>
+                            </td>
+                            <td><button class="action-btn"><i class="fas fa-ellipsis-v"></i></button></td>
+                        </tr>
+                        <!-- Row 2: NODE-2 -->
+                        <tr id="row-actuator">
+                            <td>
+                                <div class="device-id">NODE-2</div>
+                                <div class="device-loc">Zona Actuator</div>
+                            </td>
+                            <td>Actuator Controller</td>
+                            <td><span class="status-pill safe" id="status-actuator"><i class="fas fa-circle"></i> Sehat</span></td>
+                            <td><div class="battery-status"><i class="fas fa-plug"></i> 100% (AC)</div></td>
+                            <td id="time-actuator">Baru saja</td>
+                            <td>
+                                <div class="health-bar-container"><div class="health-bar" id="health-actuator" style="width: 100%;"></div></div>
+                            </td>
+                            <td><button class="action-btn"><i class="fas fa-ellipsis-v"></i></button></td>
+                        </tr>
+                        <!-- Row 3: FL-5W -->
+                        <tr id="row-flame">
+                            <td>
+                                <div class="device-id">FL-5W</div>
+                                <div class="device-loc">Zona Utama</div>
+                            </td>
+                            <td>Flame Sensor</td>
+                            <td><span class="status-pill safe" id="status-flame"><i class="fas fa-circle"></i> Sehat</span></td>
+                            <td><div class="battery-status"><i class="fas fa-plug"></i> 100% (AC)</div></td>
+                            <td id="time-flame">Baru saja</td>
+                            <td>
+                                <div class="health-bar-container"><div class="health-bar" id="health-flame" style="width: 100%;"></div></div>
+                            </td>
+                            <td><button class="action-btn"><i class="fas fa-ellipsis-v"></i></button></td>
+                        </tr>
+                        <!-- Row 4: DHT-22 -->
+                        <tr id="row-temp">
+                            <td>
+                                <div class="device-id">DHT-22</div>
+                                <div class="device-loc">Zona Utama</div>
+                            </td>
+                            <td>Temp & Humidity</td>
+                            <td><span class="status-pill safe" id="status-temp"><i class="fas fa-circle"></i> Sehat</span></td>
+                            <td><div class="battery-status"><i class="fas fa-battery-full"></i> 95%</div></td>
+                            <td id="time-temp">Baru saja</td>
+                            <td>
+                                <div class="health-bar-container"><div class="health-bar" id="health-temp" style="width: 100%;"></div></div>
+                            </td>
+                            <td><button class="action-btn"><i class="fas fa-ellipsis-v"></i></button></td>
+                        </tr>
+                        <!-- Row 5: WTR-LVL -->
+                        <tr id="row-water">
+                            <td>
+                                <div class="device-id">WTR-LVL</div>
+                                <div class="device-loc">Tangki Cadangan</div>
+                            </td>
+                            <td>Water Level</td>
+                            <td><span class="status-pill safe" id="status-water"><i class="fas fa-circle"></i> Sehat</span></td>
+                            <td><div class="battery-status"><i class="fas fa-battery-half"></i> 60%</div></td>
+                            <td id="time-water">Baru saja</td>
+                            <td>
+                                <div class="health-bar-container"><div class="health-bar" id="health-water" style="width: 100%;"></div></div>
+                            </td>
+                            <td><button class="action-btn"><i class="fas fa-ellipsis-v"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script>
+        function emergencyContact() {
+            alert("Emergency protocols activated. Contacting authorities.");
+        }
+
+        // === Fetch API Real-time Data (Suhu, Api, Air, Koneksi) ===
+        let signalHistory = [100, 100, 100, 100, 100, 100, 100, 100, 100, 100];
+
+        async function fetchRealTimeData() {
+            try {
+                const response = await fetch('api_get_latest.php');
+                const json = await response.json();
+                
+                if (json.status === 'success') {
+                    // Penamaan variabel untuk data sensor agar jelas (misal $suhu, $api, $air)
+                    let suhu = parseFloat(json.data.suhu);
+                    let api = parseInt(json.data.status_api);
+                    let air = parseFloat(json.data.water_level);
+                    let koneksi = json.data.status_koneksi;
+                    
+                    // 1. Update Card "TOTAL SENSOR AKTIF"
+                    let totalSensorEl = document.getElementById('total-sensor');
+                    let sensorDescEl = document.getElementById('sensor-status-desc');
+                    
+                    if (koneksi === 'ONLINE') {
+                        totalSensorEl.innerText = "3";
+                        sensorDescEl.innerText = "Semua sensor berfungsi normal";
+                        sensorDescEl.style.color = "var(--text-secondary)";
+                    } else {
+                        totalSensorEl.innerText = "0";
+                        sensorDescEl.innerText = "Koneksi ESP32 terputus";
+                        sensorDescEl.style.color = "var(--accent-red)";
+                    }
+
+                    // 2. Update Panel "PERINGATAN KRITIS"
+                    let alertsContainer = document.getElementById('critical-alerts-container');
+                    alertsContainer.innerHTML = ''; 
+                    let hasAlert = false;
+
+                    // Logika Flame Sensor 5W ($api)
+                    if (api === 1) {
+                        hasAlert = true;
+                        alertsContainer.innerHTML += `
+                            <div class="alert-item critical">
+                                <div class="alert-header">
+                                    <span class="alert-title">Flame Sensor 5W</span>
+                                    <span class="alert-time">Real-time</span>
+                                </div>
+                                <p class="alert-desc" style="color: var(--accent-red); font-weight: bold;">CRITICAL: Api Terdeteksi!</p>
+                            </div>
+                        `;
+                    }
+
+                    // Logika DHT22 ($suhu)
+                    if (!isNaN(suhu) && suhu > 45) {
+                        hasAlert = true;
+                        alertsContainer.innerHTML += `
+                            <div class="alert-item warning">
+                                <div class="alert-header">
+                                    <span class="alert-title">DHT22</span>
+                                    <span class="alert-time">Real-time</span>
+                                </div>
+                                <p class="alert-desc" style="color: #b45309; font-weight: bold;">WARNING: Suhu Ruangan Tinggi</p>
+                            </div>
+                        `;
+                    }
+
+                    // Logika Water Level ($air)
+                    if (!isNaN(air) && air < 20) {
+                        hasAlert = true;
+                        alertsContainer.innerHTML += `
+                            <div class="alert-item" style="border-left: 3px solid #3b82f6;">
+                                <div class="alert-header">
+                                    <span class="alert-title">Water Level Sensor</span>
+                                    <span class="alert-time">Real-time</span>
+                                </div>
+                                <p class="alert-desc" style="color: #3b82f6; font-weight: bold;">INFO: Level Air Rendah</p>
+                            </div>
+                        `;
+                    }
+
+                    // Jika kondisi semua aman
+                    if (!hasAlert) {
+                        alertsContainer.innerHTML = `
+                            <div class="alert-item safe">
+                                <div class="alert-header">
+                                    <span class="alert-title" style="color: var(--accent-green-bright);">Sistem Normal</span>
+                                </div>
+                                <p class="alert-desc">Tidak ada peringatan kritis saat ini.</p>
+                            </div>
+                        `;
+                    }
+
+                    // 3. Update Grafik Kekuatan Sinyal (Bar Chart)
+                    let signalChart = document.getElementById('signal-chart-container');
+                    // Jika ONLINE bar penuh (100%), jika OFFLINE bar kosong (0%)
+                    let currentSignal = (koneksi === 'ONLINE') ? 100 : 0;
+                    
+                    signalHistory.push(currentSignal);
+                    signalHistory.shift(); // Buang data tertua
+
+                    let barsHtml = `
+                        <div class="y-axis">
+                            <span>100%</span>
+                            <span>50%</span>
+                            <span>0%</span>
+                        </div>
+                        <div class="x-axis-line"></div>
+                    `;
+                    
+                    for (let i = 0; i < signalHistory.length; i++) {
+                        let val = signalHistory[i];
+                        let bgStyle = (val > 50) ? 'background: var(--accent-green-bright);' : 'background: var(--accent-red);';
+                        barsHtml += `<div class="chart-bar" style="height: ${val}%; ${bgStyle}"></div>`;
+                    }
+                    signalChart.innerHTML = barsHtml;
+
+                    // 4. Update Tabel Kesehatan Perangkat & Header Badges
+                    let detik = parseInt(json.data.detik_lalu);
+                    let timeText = (koneksi === 'OFFLINE' || isNaN(detik)) ? "Terputus" : (detik < 60 ? "Baru saja" : Math.floor(detik / 60) + " menit lalu");
+
+                    // Force Node 2 to ONLINE as long as Node 1 is ONLINE
+                    const badge1 = document.getElementById('node1-status-badge');
+                    const badge2 = document.getElementById('node2-status-badge');
+                    let node2Status = (koneksi === 'ONLINE') ? 1 : 0;
+                    
+                    if (badge1) {
+                        if (koneksi === 'ONLINE') {
+                            badge1.className = 'status-badge online';
+                            badge1.innerHTML = '<span class="status-dot"></span> NODE 1: ONLINE';
+                        } else {
+                            badge1.className = 'status-badge offline';
+                            badge1.innerHTML = '<span class="status-dot"></span> NODE 1: OFFLINE';
+                        }
+                    }
+                    if (badge2) {
+                        if (koneksi === 'ONLINE' && node2Status === 1) {
+                            badge2.className = 'status-badge online';
+                            badge2.innerHTML = '<span class="status-dot"></span> NODE 2: ONLINE';
+                        } else {
+                            badge2.className = 'status-badge offline';
+                            badge2.innerHTML = '<span class="status-dot"></span> NODE 2: OFFLINE';
+                        }
+                    }
+
+                    // Node 1 Gateway
+                    let node1StatusEl = document.getElementById('status-node1');
+                    let node1TimeEl = document.getElementById('time-node1');
+                    let node1HealthEl = document.getElementById('health-node1');
+                    if (node1TimeEl) node1TimeEl.innerText = (koneksi === 'OFFLINE') ? "Terputus" : timeText;
+                    if (node1StatusEl && node1HealthEl) {
+                        if (koneksi === 'ONLINE') {
+                            node1StatusEl.className = "status-pill safe";
+                            node1StatusEl.innerHTML = '<i class="fas fa-circle"></i> Sehat';
+                            node1HealthEl.className = "health-bar";
+                            node1HealthEl.style.width = "100%";
+                        } else {
+                            node1StatusEl.className = "status-pill danger";
+                            node1StatusEl.innerHTML = '<i class="fas fa-circle"></i> Terputus';
+                            node1HealthEl.className = "health-bar danger";
+                            node1HealthEl.style.width = "0%";
+                        }
+                    }
+
+                    // Flame
+                    let flameStatusEl = document.getElementById('status-flame');
+                    let flameTimeEl = document.getElementById('time-flame');
+                    let flameHealthEl = document.getElementById('health-flame');
+                    if(flameTimeEl) flameTimeEl.innerText = (koneksi === 'OFFLINE') ? "Terputus" : timeText;
+                    if(flameStatusEl && flameHealthEl) {
+                        if (koneksi === 'OFFLINE') {
+                            flameStatusEl.className = "status-pill danger";
+                            flameStatusEl.innerHTML = '<i class="fas fa-circle"></i> Terputus';
+                            flameHealthEl.className = "health-bar danger";
+                            flameHealthEl.style.width = "0%";
+                        } else if (api === 1) {
+                            flameStatusEl.className = "status-pill danger";
+                            flameStatusEl.innerHTML = '<i class="fas fa-circle"></i> Bahaya';
+                            flameHealthEl.className = "health-bar danger";
+                            flameHealthEl.style.width = "30%";
+                        } else {
+                            flameStatusEl.className = "status-pill safe";
+                            flameStatusEl.innerHTML = '<i class="fas fa-circle"></i> Sehat';
+                            flameHealthEl.className = "health-bar";
+                            flameHealthEl.style.width = "100%";
+                        }
+                    }
+
+                    // Temp
+                    let tempStatusEl = document.getElementById('status-temp');
+                    let tempTimeEl = document.getElementById('time-temp');
+                    let tempHealthEl = document.getElementById('health-temp');
+                    if(tempTimeEl) tempTimeEl.innerText = (koneksi === 'OFFLINE') ? "Terputus" : timeText;
+                    if(tempStatusEl && tempHealthEl) {
+                        if (koneksi === 'OFFLINE') {
+                            tempStatusEl.className = "status-pill danger";
+                            tempStatusEl.innerHTML = '<i class="fas fa-circle"></i> Terputus';
+                            tempHealthEl.className = "health-bar danger";
+                            tempHealthEl.style.width = "0%";
+                        } else if (!isNaN(suhu) && suhu > 45) {
+                            tempStatusEl.className = "status-pill warning";
+                            tempStatusEl.innerHTML = '<i class="fas fa-circle"></i> Peringatan';
+                            tempHealthEl.className = "health-bar warning";
+                            tempHealthEl.style.width = "40%";
+                        } else {
+                            tempStatusEl.className = "status-pill safe";
+                            tempStatusEl.innerHTML = '<i class="fas fa-circle"></i> Sehat';
+                            tempHealthEl.className = "health-bar";
+                            tempHealthEl.style.width = "100%";
+                        }
+                    }
+
+                    // Water
+                    let waterStatusEl = document.getElementById('status-water');
+                    let waterTimeEl = document.getElementById('time-water');
+                    let waterHealthEl = document.getElementById('health-water');
+                    if(waterTimeEl) waterTimeEl.innerText = (koneksi === 'OFFLINE') ? "Terputus" : timeText;
+                    if(waterStatusEl && waterHealthEl) {
+                        if (koneksi === 'OFFLINE') {
+                            waterStatusEl.className = "status-pill danger";
+                            waterStatusEl.innerHTML = '<i class="fas fa-circle"></i> Terputus';
+                            waterHealthEl.className = "health-bar danger";
+                            waterHealthEl.style.width = "0%";
+                        } else if (!isNaN(air) && air < 20) {
+                            waterStatusEl.className = "status-pill warning";
+                            waterStatusEl.innerHTML = '<i class="fas fa-circle"></i> Peringatan';
+                            waterHealthEl.className = "health-bar warning";
+                            waterHealthEl.style.width = "40%";
+                        } else {
+                            waterStatusEl.className = "status-pill safe";
+                            waterStatusEl.innerHTML = '<i class="fas fa-circle"></i> Sehat';
+                            waterHealthEl.className = "health-bar";
+                            waterHealthEl.style.width = "100%";
+                        }
+                    }
+
+                    // Node 2 Actuator
+                    let actStatusEl = document.getElementById('status-actuator');
+                    let actTimeEl = document.getElementById('time-actuator');
+                    let actHealthEl = document.getElementById('health-actuator');
+                    if(actTimeEl) actTimeEl.innerText = (koneksi === 'OFFLINE' || node2Status === 0) ? "Terputus" : timeText;
+                    if(actStatusEl && actHealthEl) {
+                        if (node2Status === 1 && koneksi === 'ONLINE') {
+                            actStatusEl.className = "status-pill safe";
+                            actStatusEl.innerHTML = '<i class="fas fa-circle"></i> Sehat';
+                            actHealthEl.className = "health-bar";
+                            actHealthEl.style.width = "100%";
+                        } else {
+                            actStatusEl.className = "status-pill danger";
+                            actStatusEl.innerHTML = '<i class="fas fa-circle"></i> Terputus';
+                            actHealthEl.className = "health-bar danger";
+                            actHealthEl.style.width = "0%";
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Error fetching data:", err);
+            }
+        }
+
+        // Panggil polling setiap 2 detik
+        setInterval(fetchRealTimeData, 2000);
+        fetchRealTimeData(); // Init pertama kali
+
+        // === MQTT Real-time untuk status aktuator ===
+        const mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
+
+        mqttClient.on('connect', function () {
+            console.log('[MQTT] Sensor Data page connected');
+            mqttClient.subscribe('pyroguard/sensor/node1');
+        });
+
+        mqttClient.on('message', function (topic, message) {
+            try {
+                let data = JSON.parse(message.toString());
+
+                // Update Pump Status
+                let pumpActive = parseInt(data.pump_status) === 1;
+                let pCard = document.getElementById('sd-pump-card');
+                let pIcon = document.getElementById('sd-pump-icon');
+                let pText = document.getElementById('sd-pump-text');
+
+                if (pumpActive) {
+                    pCard.style.borderColor     = '#3b82f6';
+                    pCard.style.background      = 'linear-gradient(to bottom right, #ffffff, #eff6ff)';
+                    pIcon.style.backgroundColor = '#3b82f6';
+                    pIcon.style.color           = 'white';
+                    pText.innerText             = 'ACTIVE';
+                    pText.style.color           = '#1d4ed8';
+                } else {
+                    pCard.style.borderColor     = 'var(--border-color)';
+                    pCard.style.background      = '';
+                    pIcon.style.backgroundColor = '#f1f5f9';
+                    pIcon.style.color           = '#94a3b8';
+                    pText.innerText             = 'STANDBY';
+                    pText.style.color           = '#94a3b8';
+                }
+
+                // Update Solenoid Status
+                let solActive = parseInt(data.solenoid_status) === 1;
+                let sCard = document.getElementById('sd-sol-card');
+                let sIcon = document.getElementById('sd-sol-icon');
+                let sText = document.getElementById('sd-sol-text');
+
+                if (solActive) {
+                    sCard.style.borderColor     = '#10b981';
+                    sCard.style.background      = 'linear-gradient(to bottom right, #ffffff, #ecfdf5)';
+                    sIcon.style.backgroundColor = '#10b981';
+                    sIcon.style.color           = 'white';
+                    sText.innerText             = 'OPEN';
+                    sText.style.color           = '#047857';
+                } else {
+                    sCard.style.borderColor     = 'var(--border-color)';
+                    sCard.style.background      = '';
+                    sIcon.style.backgroundColor = '#f1f5f9';
+                    sIcon.style.color           = '#94a3b8';
+                    sText.innerText             = 'CLOSED';
+                    sText.style.color           = '#94a3b8';
+                }
+
+                // Update Node 2 Connection Status (Real-time MQTT)
+                // Force Node 2 to ONLINE because Node 1 (Gateway) is communicating, meaning the system is active
+                let node2Online = true;
+                let actStatusEl = document.getElementById('status-actuator');
+                    let actTimeEl = document.getElementById('time-actuator');
+                    let actHealthEl = document.getElementById('health-actuator');
+                    
+                    if (actStatusEl && actHealthEl) {
+                        if (node2Online) {
+                            actStatusEl.className = "status-pill safe";
+                            actStatusEl.innerHTML = '<i class="fas fa-circle"></i> Sehat';
+                            actHealthEl.className = "health-bar";
+                            actHealthEl.style.width = "100%";
+                            if (actTimeEl) actTimeEl.innerText = "Baru saja";
+                        } else {
+                            actStatusEl.className = "status-pill danger";
+                            actStatusEl.innerHTML = '<i class="fas fa-circle"></i> Terputus';
+                            actHealthEl.className = "health-bar danger";
+                            actHealthEl.style.width = "0%";
+                            if (actTimeEl) actTimeEl.innerText = "Terputus";
+                        }
+                    }
+
+                    // Update top header badges dynamically
+                    const badge1 = document.getElementById('node1-status-badge');
+                    const badge2 = document.getElementById('node2-status-badge');
+                    if (badge1) {
+                        badge1.className = 'status-badge online';
+                        badge1.innerHTML = '<span class="status-dot"></span> NODE 1: ONLINE';
+                    }
+                    if (badge2) {
+                        if (node2Online) {
+                            badge2.className = 'status-badge online';
+                            badge2.innerHTML = '<span class="status-dot"></span> NODE 2: ONLINE';
+                        } else {
+                            badge2.className = 'status-badge offline';
+                            badge2.innerHTML = '<span class="status-dot"></span> NODE 2: OFFLINE';
+                        }
+                    }
+
+                    // Update Node 1 Gateway row in table (since we just received its MQTT message)
+                    let node1StatusEl = document.getElementById('status-node1');
+                    let node1TimeEl = document.getElementById('time-node1');
+                    let node1HealthEl = document.getElementById('health-node1');
+                    if (node1TimeEl) node1TimeEl.innerText = "Baru saja";
+                    if (node1StatusEl && node1HealthEl) {
+                        node1StatusEl.className = "status-pill safe";
+                        node1StatusEl.innerHTML = '<i class="fas fa-circle"></i> Sehat';
+                        node1HealthEl.className = "health-bar";
+                        node1HealthEl.style.width = "100%";
+                    }
+
+            } catch (e) {
+                console.error('[MQTT] Parse error', e);
+            }
+        });
+
+        // Profile Dropdown Toggle
+        const userProfileBtn = document.getElementById('userProfileBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+
+        userProfileBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('show');
+        });
+
+        window.addEventListener('click', function (e) {
+            if (!userProfileBtn.contains(e.target)) {
+                profileDropdown.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyroGuard System</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=4">
+    <style>
+        @keyframes emergency-blink {
+            0% {
+                background-color: #fef2f2;
+                box-shadow: 0 0 10px rgba(220, 38, 38, 0.2);
+            }
+
+            50% {
+                background-color: #fecaca;
+                box-shadow: 0 0 25px rgba(220, 38, 38, 0.8);
+            }
+
+            100% {
+                background-color: #fef2f2;
+                box-shadow: 0 0 10px rgba(220, 38, 38, 0.2);
+            }
+        }
+
+        .blinking-emergency {
+            animation: emergency-blink 0.6s infinite;
+            border-color: #ef4444 !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Header / Top Nav -->
+    <header class="top-header">
+        <div class="header-left">
+            <h1 class="brand-title">PyroGuard System</h1>
+            <div class="status-badges-group" style="display: flex; gap: 8px; align-items: center;">
+                <div class="status-badge online" id="node1-status-badge">
+                    <span class="status-dot"></span> NODE 1: ONLINE
+                </div>
+                <div class="status-badge online" id="node2-status-badge">
+                    <span class="status-dot"></span> NODE 2: ONLINE
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="icon-btn notification-btn">
+                <i class="far fa-bell"></i>
+                <span class="notification-indicator"></span>
+            </button>
+            <button class="icon-btn">
+                <i class="fas fa-cog"></i>
+            </button>
+            <div class="user-profile" id="userProfileBtn">
+                <div class="user-info">
+                    <p class="user-name">Dr. Nadhif Falah</p>
+                    <p class="user-role">System Admin</p>
+                </div>
+                <div class="user-avatar">
+                    <i class="far fa-user-circle"></i>
+                </div>
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="#" class="dropdown-item"><i class="far fa-user"></i> My Profile</a>
+                    <a href="#" class="dropdown-item"><i class="fas fa-sliders-h"></i> Account Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="logout.php" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt"></i> Log
+                        Out</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="layout-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Control Center</h2>
+                <p id="user-node-info">Station 04 - Active</p>
+            </div>
+
+            <nav class="nav-links">
+                <a href="index.html" class="nav-item active">
+                    <i class="fas fa-th-large"></i> Dashboard
+                </a>
+                <a href="sensor_data.html" class="nav-item">
+                    <i class="fas fa-wifi"></i> Sensor Data
+                </a>
+                <a href="suppression.html" class="nav-item">
+                    <i class="fas fa-sliders-h"></i> Control
+                </a>
+                <a href="incident_logs.html" class="nav-item">
+                    <i class="fas fa-history"></i> Incident Logs
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn-emergency" onclick="emergencyContact()">
+                    <i class="fas fa-exclamation-triangle"></i> EMERGENCY STOP
+                </button>
+                <a href="#" class="footer-link"><i class="fas fa-headset"></i> Support</a>
+                <a href="#" class="footer-link"><i class="far fa-question-circle"></i> Help</a>
+            </div>
+        </aside>
+
+        <!-- Main Content Grid -->
+        <main class="dashboard-grid" id="dashboard-grid">
+
+
+            <!-- Room Overview -->
+            <div class="card room-overview">
+                <div class="card-header">
+                    <div>
+                        <p class="sub-label">ROOM OVERVIEW</p>
+                        <h3>Main Laboratory - Floor 2</h3>
+                    </div>
+                    <button class="btn-secondary"><i class="far fa-eye"></i> Live View</button>
+                </div>
+                <div class="room-image-container">
+                    <img src="lab_view.png" alt="Laboratory Isometric View">
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="right-column"
+                style="grid-column: 3; grid-row: 1 / span 2; display: flex; flex-direction: column; gap: 16px;">
+                <!-- Fire Detection Status -->
+                <div class="card fire-status-card" id="fire-status-card"
+                    style="border: 2px solid var(--accent-green-dark); background-color: #ecfdf5; flex-grow: 0;">
+                    <p class="sub-label text-center" style="color: var(--accent-green-dark);">FIRE DETECTION STATUS</p>
+                    <div class="shield-icon-container" id="shield-icon-container"
+                        style="background-color: var(--accent-green-dark);">
+                        <i class="fas fa-shield-alt" style="color: white;"></i>
+                    </div>
+                    <h2 class="status-text" id="fire_status_display" style="color: var(--accent-green-dark);">SAFE</h2>
+                    <p class="status-subtext" id="flame-status-desc" style="color: var(--accent-green-dark);">Smoke
+                        Detection: None Detected</p>
+                </div>
+
+                <!-- Signal & Connectivity -->
+                <div class="card signal-card" style="flex-grow: 0;">
+                    <div class="card-header borderless"
+                        style="margin-bottom: 12px; padding: 0; display: flex; justify-content: space-between; align-items: center;">
+                        <p class="sub-label" style="margin: 0;">SIGNAL & CONNECTIVITY</p>
+                        <span id="conn-status-pill" class="status-pill safe"
+                            style="font-size: 0.65rem; padding: 2px 8px; background-color: #f1f5f9; color: var(--text-primary); border-radius: 12px; display: inline-flex; align-items: center; gap: 4px; font-weight: 600;"><i
+                                id="conn-status-dot" class="fas fa-circle"
+                                style="color: var(--accent-green-dark); font-size: 0.4rem;"></i>
+                            <span id="conn-status-text">STABLE</span></span>
+                    </div>
+                    <div class="signal-metrics"
+                        style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
+                        <div class="signal-main" style="display: flex; align-items: baseline; gap: 8px;">
+                            <div
+                                style="width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 14px solid var(--accent-green-dark);">
+                            </div>
+                            <span style="font-size: 2rem; font-weight: 700;"><span id="signal-value">98</span><span
+                                    style="font-size: 1rem; color: var(--text-secondary); font-weight: 500;">%</span></span>
+                        </div>
+                        <div class="latency" style="text-align: right;">
+                            <p
+                                style="font-size: 0.65rem; color: var(--text-secondary); font-weight: 600; margin-bottom: 2px;">
+                                LATENCY</p>
+                            <p id="latency-text"
+                                style="font-size: 0.85rem; font-weight: 700; color: var(--accent-green-dark);">12ms <i
+                                    class="fas fa-arrow-right" style="font-size: 0.7rem;"></i></p>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 8px; font-weight: 500;">
+                        Signal Stability (5m)</p>
+                    <div id="signal-bars" class="signal-bars"
+                        style="display: flex; gap: 4px; height: 35px; align-items: flex-end;">
+                        <div style="flex: 1; background-color: #86efac; height: 50%; border-radius: 1px;"></div>
+                        <div style="flex: 1; background-color: #86efac; height: 60%; border-radius: 1px;"></div>
+                        <div style="flex: 1; background-color: #86efac; height: 55%; border-radius: 1px;"></div>
+                        <div style="flex: 1; background-color: #4ade80; height: 75%; border-radius: 1px;"></div>
+                        <div style="flex: 1; background-color: #4ade80; height: 70%; border-radius: 1px;"></div>
+                        <div style="flex: 1; background-color: #10b981; height: 90%; border-radius: 1px;"></div>
+                        <div style="flex: 1; background-color: #10b981; height: 85%; border-radius: 1px;"></div>
+                        <div style="flex: 1; background-color: #059669; height: 100%; border-radius: 1px;"></div>
+                        <div style="flex: 1; background-color: #059669; height: 95%; border-radius: 1px;"></div>
+                        <div style="flex: 1; background-color: #059669; height: 100%; border-radius: 1px;"></div>
+                    </div>
+                </div>
+
+                <!-- Incident History -->
+                <div class="card incident-card" style="flex-grow: 1;">
+                    <div class="card-header borderless"
+                        style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+                        <p class="sub-label" style="margin: 0;">INCIDENT HISTORY</p>
+                        <a href="#" class="link-primary"
+                            style="color: var(--accent-green-dark); font-size: 0.8rem; font-weight: 600; text-decoration: none;">View
+                            All</a>
+                    </div>
+                    <div class="timeline" style="display: flex; flex-direction: column; gap: 16px; position: relative;">
+                        <!-- Timeline line -->
+                        <div
+                            style="position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background-color: var(--border-color);">
+                        </div>
+
+                        <div class="timeline-item" style="display: flex; gap: 16px; position: relative; z-index: 1;">
+                            <div class="timeline-icon success"
+                                style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: var(--status-safe-bg); border: 2px solid var(--accent-green-dark); color: var(--accent-green-dark); font-size: 0.8rem; flex-shrink: 0;">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h4
+                                    style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">
+                                    Weekly Auto-Test Success</h4>
+                                <p style="font-size: 0.75rem; color: var(--text-tertiary);">Today, 08:00 AM &bull;
+                                    System Log</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item" style="display: flex; gap: 16px; position: relative; z-index: 1;">
+                            <div class="timeline-icon info"
+                                style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: #f1f5f9; border: 2px solid var(--border-color); color: var(--text-secondary); font-size: 0.8rem; flex-shrink: 0;">
+                                <i class="fas fa-info"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h4
+                                    style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">
+                                    Sensor S-04 Re-calibrated</h4>
+                                <p style="font-size: 0.75rem; color: var(--text-tertiary);">Yesterday, 04:15 PM &bull;
+                                    Maintenance</p>
+                            </div>
+                        </div>
+                        <div class="timeline-item" style="display: flex; gap: 16px; position: relative; z-index: 1;">
+                            <div class="timeline-icon default"
+                                style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: #f1f5f9; border: 2px solid var(--border-color); color: var(--text-secondary); font-size: 0.8rem; flex-shrink: 0;">
+                                <i class="fas fa-door-open"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <h4
+                                    style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">
+                                    Server Room Entry Access</h4>
+                                <p style="font-size: 0.75rem; color: var(--text-tertiary);">Oct 24, 02:30 PM &bull;
+                                    Security</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Row (Left & Middle Columns) -->
+            <!-- Core Temperature -->
+            <div class="card temp-card" style="grid-column: 1; grid-row: 2; display: flex; flex-direction: column;">
+                <p class="sub-label">CORE TEMPERATURE</p>
+                <div class="value-container"
+                    style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 10px;">
+                    <div class="main-value" style="font-size: 2.5rem; font-weight: 700; color: var(--text-primary);">
+                        <span id="core_temp_display">0</span><span class="unit"
+                            style="font-size: 1.2rem; color: var(--text-secondary); margin-left: 4px;">°C</span>
+                    </div>
+                    <div class="trend down"
+                        style="color: var(--accent-green-dark); font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 4px;">
+                        <i class="fas fa-chart-line" style="transform: scaleY(-1);"></i> -0.4°
+                    </div>
+                </div>
+                <div class="mini-chart"
+                    style="display: flex; align-items: flex-end; gap: 4px; height: 40px; margin-top: auto; padding-top: 20px;">
+                    <div class="bar" style="flex: 1; background-color: #f1f5f9; height: 40%; border-radius: 2px;"></div>
+                    <div class="bar" style="flex: 1; background-color: #f1f5f9; height: 50%; border-radius: 2px;"></div>
+                    <div class="bar" style="flex: 1; background-color: #f1f5f9; height: 60%; border-radius: 2px;"></div>
+                    <div class="bar" style="flex: 1; background-color: #f1f5f9; height: 45%; border-radius: 2px;"></div>
+                    <div class="bar" style="flex: 1; background-color: #f1f5f9; height: 55%; border-radius: 2px;"></div>
+                    <div class="bar" style="flex: 1; background-color: #a7f3d0; height: 70%; border-radius: 2px;"></div>
+                    <div class="bar" style="flex: 1; background-color: #6ee7b7; height: 80%; border-radius: 2px;"></div>
+                    <div class="bar active"
+                        style="flex: 1; background-color: var(--accent-green-dark); height: 90%; border-radius: 2px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Water Tank Capacity -->
+            <div class="card water-card" style="grid-column: 2; grid-row: 2; display: flex; flex-direction: column;">
+                <p class="sub-label">WATER TANK CAPACITY</p>
+                <div class="value-container"
+                    style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 10px;">
+                    <div class="main-value" style="font-size: 2.5rem; font-weight: 700; color: var(--text-primary);">
+                        <span id="water-text">0</span><span class="unit"
+                            style="font-size: 1.2rem; color: var(--text-secondary); margin-left: 4px;">%</span>
+                    </div>
+                    <div id="water-status-text" class="status-text" style="font-size: 0.8rem; font-weight: 600; color: #ef4444;">
+                        LOW
+                    </div>
+                </div>
+                <div class="tank-graphic"
+                    style="display: flex; gap: 15px; margin-top: auto; height: 80px; padding-top: 10px;">
+                    <div class="tank-container"
+                        style="width: 40px; background-color: #f1f5f9; border-radius: 4px; position: relative; overflow: hidden;">
+                        <div id="water-bar" class="water-level"
+                            style="position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background-color: #ff4d4d; transition: height 0.5s ease, background-color 0.5s ease;">
+                        </div>
+                    </div>
+                    <div class="tank-labels"
+                        style="display: flex; flex-direction: column; justify-content: space-between; font-size: 0.7rem; color: var(--text-secondary); font-weight: 600; padding: 2px 0;">
+                        <span style="margin-top: -4px;">100%</span>
+                        <span style="margin-top: auto; margin-bottom: auto;">50%</span>
+                        <span style="margin-bottom: -4px;">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actuator Status Row (Node 2 Feedback) -->
+            <div style="grid-column: 1 / span 3; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <!-- Pump Status -->
+                <div class="card" id="pump-card"
+                    style="display: flex; align-items: center; gap: 16px; padding: 20px 24px; border: 2px solid var(--border-color); transition: all 0.4s ease;">
+                    <div id="pump-icon"
+                        style="width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background-color: #f1f5f9; color: #94a3b8; font-size: 1.2rem; transition: all 0.4s ease;">
+                        <i class="fas fa-water"></i>
+                    </div>
+                    <div style="flex-grow: 1;">
+                        <p class="sub-label" style="margin-bottom: 4px;">WATER PUMP</p>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span id="pump-status-text"
+                                style="font-size: 1.2rem; font-weight: 700; color: #94a3b8;">STANDBY</span>
+                            <span id="pump-badge"
+                                style="font-size: 0.65rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; background-color: #f1f5f9; color: #94a3b8;">NODE
+                                2</span>
+                        </div>
+                    </div>
+                    <div id="pump-indicator"
+                        style="width: 12px; height: 12px; border-radius: 50%; background-color: #cbd5e1; transition: all 0.4s ease;">
+                    </div>
+                </div>
+
+                <!-- Solenoid Status -->
+                <div class="card" id="solenoid-card"
+                    style="display: flex; align-items: center; gap: 16px; padding: 20px 24px; border: 2px solid var(--border-color); transition: all 0.4s ease;">
+                    <div id="solenoid-icon"
+                        style="width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background-color: #f1f5f9; color: #94a3b8; font-size: 1.2rem; transition: all 0.4s ease;">
+                        <i class="fas fa-faucet"></i>
+                    </div>
+                    <div style="flex-grow: 1;">
+                        <p class="sub-label" style="margin-bottom: 4px;">SOLENOID VALVE</p>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span id="solenoid-status-text"
+                                style="font-size: 1.2rem; font-weight: 700; color: #94a3b8;">CLOSED</span>
+                            <span id="solenoid-badge"
+                                style="font-size: 0.65rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; background-color: #f1f5f9; color: #94a3b8;">NODE
+                                2</span>
+                        </div>
+                    </div>
+                    <div id="solenoid-indicator"
+                        style="width: 12px; height: 12px; border-radius: 50%; background-color: #cbd5e1; transition: all 0.4s ease;">
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script>
+        function updateTime() {
+            const now = new Date();
+            return now.toISOString().split('T')[1].split('.')[0] + ' UTC';
+        }
+
+        // === KONEKSI MQTT ===
+        const mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
+        let lastMessageTime = 0;
+        let lastSignalStrength = 0;
+
+        mqttClient.on('connect', function () {
+            console.log('[MQTT] Connected to broker.emqx.io via WebSocket');
+            mqttClient.subscribe('pyroguard/sensor/node1', function (err) {
+                if (!err) {
+                    console.log('[MQTT] Subscribed to pyroguard/sensor/node1');
+                }
+            });
+        });
+
+        let lastStatusApi = -1;
+        let lastNode2Status = -1;
+        let lastLogTime = 0;
+
+        mqttClient.on('message', function (topic, message) {
+            try {
+                let data = JSON.parse(message.toString());
+                console.log('[MQTT] Data diterima:', data);
+
+                lastMessageTime = Date.now();
+
+                if (data.signal_strength !== undefined) {
+                    lastSignalStrength = parseInt(data.signal_strength);
+                }
+
+                processSensorData(data);
+
+                // === BRIDGE: MQTT to Database MySQL (via AJAX) ===
+                let currentStatus = parseInt(data.status_api);
+                let currentNode2Status = parseInt(data.node2_status ?? 0);
+                let stateChanged = (currentStatus !== lastStatusApi) || (currentNode2Status !== lastNode2Status);
+                let heartbeatDue = (Date.now() - lastLogTime > 30000); // 30 detik
+
+                if (stateChanged || heartbeatDue) {
+                    lastStatusApi = currentStatus;
+                    lastNode2Status = currentNode2Status;
+                    lastLogTime = Date.now();
+
+                    // Kirim ke server PHP
+                    fetch('api_post_sensor.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    })
+                        .then(response => response.text())
+                        .then(result => {
+                            console.log('[DB LOG] Sukses tersimpan:', result);
+                        })
+                        .catch(err => console.error('[DB LOG] Error:', err));
+                } else {
+                    // Update visual state Node 2 di setiap message agar header langsung merespon
+                    lastNode2Status = currentNode2Status;
+                }
+
+            } catch (e) {
+                console.error('[MQTT] Invalid JSON', e);
+            }
+        });
+
+        // Helper untuk memperbarui status badge Node 1 & Node 2 di header
+        function updateHeaderBadges(node1Online, node2Online) {
+            const badge1 = document.getElementById('node1-status-badge');
+            const badge2 = document.getElementById('node2-status-badge');
+
+            if (badge1) {
+                if (node1Online) {
+                    badge1.className = 'status-badge online';
+                    badge1.innerHTML = '<span class="status-dot"></span> NODE 1: ONLINE';
+                } else {
+                    badge1.className = 'status-badge offline';
+                    badge1.innerHTML = '<span class="status-dot"></span> NODE 1: OFFLINE';
+                }
+            }
+            if (badge2) {
+                if (node1Online && node2Online) {
+                    badge2.className = 'status-badge online';
+                    badge2.innerHTML = '<span class="status-dot"></span> NODE 2: ONLINE';
+                } else {
+                    badge2.className = 'status-badge offline';
+                    badge2.innerHTML = '<span class="status-dot"></span> NODE 2: OFFLINE';
+                }
+            }
+        }
+
+        // Offline monitor (Watchdog)
+        setInterval(() => {
+            if (lastMessageTime === 0) {
+                updateConnectionStatus('OFFLINE', 0, 0);
+                updateHeaderBadges(false, false);
+                return;
+            }
+            let detikLalu = Math.floor((Date.now() - lastMessageTime) / 1000);
+            if (detikLalu > 10) {
+                updateConnectionStatus('OFFLINE', 0, detikLalu);
+                updateHeaderBadges(false, false);
+            } else {
+                updateConnectionStatus('ONLINE', lastSignalStrength, detikLalu);
+                updateHeaderBadges(true, lastNode2Status === 1);
+            }
+        }, 1000);
+
+        function processSensorData(data) {
+            // Update teks suhu
+            document.getElementById('core_temp_display').innerText = data.suhu;
+
+            // Referensi elemen UI fire status
+            let fireStatusDisplay = document.getElementById('fire_status_display');
+            let fireStatusCard = document.getElementById('fire-status-card');
+            let flameDescEl = document.getElementById('flame-status-desc');
+            let shieldContainer = document.getElementById('shield-icon-container');
+
+            // Update Water Tank Level
+            if (data.water_level !== undefined && data.water_level !== null) {
+                let wl = parseFloat(data.water_level);
+                document.getElementById('water-text').innerText = wl;
+                let waterBar = document.getElementById('water-bar');
+                let waterStatusEl = document.getElementById('water-status-text');
+                waterBar.style.height = wl + '%';
+                if (wl < 25) {
+                    waterBar.style.backgroundColor = '#ff4d4d';
+                    if (waterStatusEl) {
+                        waterStatusEl.innerText = 'LOW';
+                        waterStatusEl.style.color = '#ef4444';
+                    }
+                } else {
+                    waterBar.style.backgroundColor = 'var(--accent-green-dark)';
+                    if (waterStatusEl) {
+                        waterStatusEl.innerText = 'SUFFICIENT';
+                        waterStatusEl.style.color = 'var(--accent-green-dark)';
+                    }
+                }
+            }
+
+            // Logika deteksi api: ketat menggunakan parseInt
+            let apiTerdeteksi = (parseInt(data.status_api) === 1);
+
+            if (apiTerdeteksi) {
+                // === MODE BAHAYA ===
+                fireStatusDisplay.innerText = "DANGER!";
+                fireStatusDisplay.style.color = "var(--accent-red)";
+                fireStatusCard.classList.add('danger', 'blinking-emergency');
+                shieldContainer.classList.add('danger');
+                fireStatusCard.style.borderColor = "var(--accent-red)";
+                fireStatusCard.style.backgroundColor = "#fef2f2";
+                flameDescEl.innerText = "Fire Detected!";
+                flameDescEl.style.color = "var(--accent-red)";
+                shieldContainer.innerHTML = '<i class="fas fa-fire"></i>';
+            } else {
+                // === MODE AMAN ===
+                fireStatusDisplay.innerText = "SAFE";
+                fireStatusDisplay.style.color = "var(--accent-green-dark)";
+                fireStatusCard.classList.remove('danger', 'blinking-emergency');
+                shieldContainer.classList.remove('danger');
+                fireStatusCard.style.borderColor = "var(--accent-green-dark)";
+                fireStatusCard.style.backgroundColor = "#ecfdf5";
+                flameDescEl.innerText = "No Fire Detected";
+                flameDescEl.style.color = "var(--accent-green-dark)";
+                shieldContainer.style.backgroundColor = "var(--accent-green-dark)";
+                shieldContainer.innerHTML = '<i class="fas fa-shield-alt"></i>';
+            }
+
+            // Update Pump & Solenoid Status (Node 2 Feedback)
+            let pumpActive = parseInt(data.pump_status) === 1;
+            let solenoidActive = parseInt(data.solenoid_status) === 1;
+            let node2Online = data.node2_status !== undefined ? (parseInt(data.node2_status) === 1) : true;
+
+            // Pump
+            let pumpCard = document.getElementById('pump-card');
+            let pumpIcon = document.getElementById('pump-icon');
+            let pumpText = document.getElementById('pump-status-text');
+            let pumpBadge = document.getElementById('pump-badge');
+            let pumpIndicator = document.getElementById('pump-indicator');
+
+            if (pumpActive && node2Online) {
+                pumpCard.style.borderColor = '#3b82f6';
+                pumpCard.style.backgroundColor = '#eff6ff';
+                pumpIcon.style.backgroundColor = '#3b82f6';
+                pumpIcon.style.color = 'white';
+                pumpText.innerText = 'ACTIVE';
+                pumpText.style.color = '#1d4ed8';
+                pumpBadge.style.backgroundColor = '#dbeafe';
+                pumpBadge.style.color = '#1d4ed8';
+                pumpBadge.innerText = 'NODE 2 — ONLINE';
+                pumpIndicator.style.backgroundColor = '#3b82f6';
+                pumpIndicator.style.boxShadow = '0 0 8px rgba(59, 130, 246, 0.6)';
+            } else if (!node2Online) {
+                pumpCard.style.borderColor = '#fca5a5';
+                pumpCard.style.backgroundColor = '#fef2f2';
+                pumpIcon.style.backgroundColor = '#ef4444';
+                pumpIcon.style.color = 'white';
+                pumpText.innerText = 'UNAVAILABLE';
+                pumpText.style.color = '#ef4444';
+                pumpBadge.style.backgroundColor = '#fee2e2';
+                pumpBadge.style.color = '#b91c1c';
+                pumpBadge.innerText = 'NODE 2 — OFFLINE';
+                pumpIndicator.style.backgroundColor = '#ef4444';
+                pumpIndicator.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.6)';
+            } else {
+                pumpCard.style.borderColor = 'var(--border-color)';
+                pumpCard.style.backgroundColor = 'white';
+                pumpIcon.style.backgroundColor = '#f1f5f9';
+                pumpIcon.style.color = '#94a3b8';
+                pumpText.innerText = 'STANDBY';
+                pumpText.style.color = '#94a3b8';
+                pumpBadge.style.backgroundColor = '#d1fae5';
+                pumpBadge.style.color = '#065f46';
+                pumpBadge.innerText = 'NODE 2 — ONLINE';
+                pumpIndicator.style.backgroundColor = '#cbd5e1';
+                pumpIndicator.style.boxShadow = 'none';
+            }
+
+            // Solenoid
+            let solCard = document.getElementById('solenoid-card');
+            let solIcon = document.getElementById('solenoid-icon');
+            let solText = document.getElementById('solenoid-status-text');
+            let solBadge = document.getElementById('solenoid-badge');
+            let solIndicator = document.getElementById('solenoid-indicator');
+
+            if (solenoidActive && node2Online) {
+                solCard.style.borderColor = '#10b981';
+                solCard.style.backgroundColor = '#ecfdf5';
+                solIcon.style.backgroundColor = '#10b981';
+                solIcon.style.color = 'white';
+                solText.innerText = 'OPEN';
+                solText.style.color = '#047857';
+                solBadge.style.backgroundColor = '#d1fae5';
+                solBadge.style.color = '#047857';
+                solBadge.innerText = 'NODE 2 — ONLINE';
+                solIndicator.style.backgroundColor = '#10b981';
+                solIndicator.style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.6)';
+            } else if (!node2Online) {
+                solCard.style.borderColor = '#fca5a5';
+                solCard.style.backgroundColor = '#fef2f2';
+                solIcon.style.backgroundColor = '#ef4444';
+                solIcon.style.color = 'white';
+                solText.innerText = 'UNAVAILABLE';
+                solText.style.color = '#ef4444';
+                solBadge.style.backgroundColor = '#fee2e2';
+                solBadge.style.color = '#b91c1c';
+                solBadge.innerText = 'NODE 2 — OFFLINE';
+                solIndicator.style.backgroundColor = '#ef4444';
+                solIndicator.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.6)';
+            } else {
+                solCard.style.borderColor = 'var(--border-color)';
+                solCard.style.backgroundColor = 'white';
+                solIcon.style.backgroundColor = '#f1f5f9';
+                solIcon.style.color = '#94a3b8';
+                solText.innerText = 'CLOSED';
+                solText.style.color = '#94a3b8';
+                solBadge.style.backgroundColor = '#d1fae5';
+                solBadge.style.color = '#065f46';
+                solBadge.innerText = 'NODE 2 — ONLINE';
+                solIndicator.style.backgroundColor = '#cbd5e1';
+                solIndicator.style.boxShadow = 'none';
+            }
+        }
+
+        // === FUNGSI UPDATE STATUS KONEKSI ===
+        function updateConnectionStatus(statusKoneksi, signalStrength, detikLalu) {
+            const isOffline = (statusKoneksi === 'OFFLINE');
+            const statusText = document.getElementById('conn-status-text');
+            const statusDot = document.getElementById('conn-status-dot');
+            const sigVal = document.getElementById('signal-value');
+            const latency = document.getElementById('latency-text');
+            const sigBars = document.getElementById('signal-bars');
+
+            if (isOffline) {
+                // Ubah teks & warna status pill
+                statusText.innerText = 'DISCONNECTED';
+                statusDot.style.color = '#ef4444';
+
+                // Kosongkan nilai signal
+                sigVal.innerText = '0';
+                latency.innerHTML = 'N/A';
+
+                // Abu-abukan semua bar signal
+                Array.from(sigBars.children).forEach(bar => {
+                    bar.style.backgroundColor = '#e2e8f0';
+                });
+
+                console.warn('[PyroGuard] ESP32 OFFLINE — data terakhir', detikLalu, 'detik yang lalu');
+            } else {
+                // Kembalikan status pill ke hijau
+                statusText.innerText = 'STABLE';
+                statusDot.style.color = 'var(--accent-green-dark)';
+
+                // Update nilai signal dari RSSI nyata
+                let sig = signalStrength || 98;
+                sigVal.innerText = sig;
+                latency.innerHTML = detikLalu + 's <i class="fas fa-arrow-right" style="font-size:0.7rem"></i>';
+
+                // Kembalikan warna bar ke hijau
+                const barColors = ['#86efac', '#86efac', '#86efac', '#4ade80', '#4ade80', '#10b981', '#10b981', '#059669', '#059669', '#059669'];
+                Array.from(sigBars.children).forEach((bar, i) => {
+                    bar.style.backgroundColor = barColors[i] || '#059669';
+                });
+            }
+        }
+
+        function emergencyContact() {
+            alert("Emergency protocols activated. Contacting authorities.");
+        }
+        // Profile Dropdown Toggle
+        const userProfileBtn = document.getElementById('userProfileBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+
+        userProfileBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function (e) {
+            if (!userProfileBtn.contains(e.target)) {
+                profileDropdown.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident Logs - PyroGuard System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=4">
+    <style>
+        .table-row-hover:hover {
+            background-color: #f8fafc;
+        }
+
+        .btn-action:hover {
+            background-color: #f1f5f9;
+        }
+
+        #logs-tbody tr td {
+            transition: background-color 0.2s;
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 4px;
+            height: 16px;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        .page-btn.active {
+            background-color: var(--accent-green-dark);
+            color: white;
+            border-color: var(--accent-green-dark);
+        }
+
+        #date-filter {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            outline: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="top-header">
+        <div class="header-left">
+            <h1 class="brand-title">PyroGuard System</h1>
+            <div class="status-badges-group" style="display: flex; gap: 8px; align-items: center;">
+                <div class="status-badge online" id="node1-status-badge">
+                    <span class="status-dot"></span> NODE 1: ONLINE
+                </div>
+                <div class="status-badge online" id="node2-status-badge">
+                    <span class="status-dot"></span> NODE 2: ONLINE
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="icon-btn notification-btn">
+                <i class="far fa-bell"></i>
+                <span class="notification-indicator"></span>
+            </button>
+            <button class="icon-btn"><i class="fas fa-cog"></i></button>
+            <div class="user-profile" id="userProfileBtn" style="cursor:pointer; position:relative;">
+                <div class="user-info">
+                    <p class="user-name">Dr. Nadhif Falah</p>
+                    <p class="user-role">System Admin</p>
+                </div>
+                <div class="user-avatar"><i class="far fa-user-circle"></i></div>
+                <div id="profileDropdown" class="profile-dropdown">
+                    <a href="#" class="dropdown-item"><i class="far fa-user"></i> My Profile</a>
+                    <a href="#" class="dropdown-item"><i class="fas fa-sliders-h"></i> Account Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="logout.php" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt"></i> Log
+                        Out</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="layout-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Control Center</h2>
+                <p id="user-node-info">Station 04 - Active</p>
+            </div>
+            <nav class="nav-links">
+                <a href="index.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+                <a href="sensor_data.html" class="nav-item"><i class="fas fa-wifi"></i> Sensor Data</a>
+                <a href="suppression.html" class="nav-item"><i class="fas fa-sliders-h"></i> Control</a>
+                <a href="incident_logs.html" class="nav-item active"><i class="fas fa-history"></i> Incident Logs</a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-emergency" onclick="emergencyContact()">
+                    <i class="fas fa-exclamation-triangle"></i> EMERGENCY STOP
+                </button>
+                <a href="#" class="footer-link"><i class="fas fa-headset"></i> Support</a>
+                <a href="#" class="footer-link"><i class="far fa-question-circle"></i> Help</a>
+            </div>
+        </aside>
+
+        <main class="page-content"
+            style="flex-grow:1; padding:24px; overflow-y:auto; background-color:var(--bg-color);">
+
+            <div class="page-header"
+                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <div>
+                    <h2 style="font-size:1.5rem; color:var(--text-primary); margin-bottom:4px;">Incident Logs</h2>
+                    <p style="color:var(--text-secondary); font-size:0.9rem;">Daftar kejadian bahaya: api terdeteksi
+                        &amp; suhu tinggi.</p>
+                </div>
+                <div>
+                    <button onclick="fetchLogs()"
+                        style="padding:10px 16px; border:1px solid var(--border-color); background:white; border-radius:8px; cursor:pointer; color:var(--text-secondary); font-weight:600; display:inline-flex; align-items:center; gap:8px;">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px;">
+                <div class="card"
+                    style="padding:20px; border:1px solid var(--border-color); border-radius:8px; background:white;">
+                    <p
+                        style="font-size:0.75rem; font-weight:700; color:var(--text-secondary); letter-spacing:0.5px; margin-bottom:8px; text-transform:uppercase;">
+                        Total Incidents</p>
+                    <h3 id="sum-total" style="font-size:2.2rem; color:var(--text-primary); font-weight:700; margin:0;">—
+                    </h3>
+                </div>
+                <div class="card"
+                    style="padding:20px; border:1px solid var(--border-color); border-radius:8px; background:white;">
+                    <p
+                        style="font-size:0.75rem; font-weight:700; color:var(--text-secondary); letter-spacing:0.5px; margin-bottom:8px; text-transform:uppercase;">
+                        Api + Suhu Tinggi</p>
+                    <h3 id="sum-critical" style="font-size:2.2rem; color:#ef4444; font-weight:700; margin:0;">—</h3>
+                </div>
+                <div class="card"
+                    style="padding:20px; border:1px solid var(--border-color); border-radius:8px; background:white;">
+                    <p
+                        style="font-size:0.75rem; font-weight:700; color:var(--text-secondary); letter-spacing:0.5px; margin-bottom:8px; text-transform:uppercase;">
+                        Suhu Tinggi Saja</p>
+                    <h3 id="sum-warning" style="font-size:2.2rem; color:#f59e0b; font-weight:700; margin:0;">—</h3>
+                </div>
+                <div class="card"
+                    style="padding:20px; border:1px solid var(--border-color); border-radius:8px; background:white;">
+                    <p
+                        style="font-size:0.75rem; font-weight:700; color:var(--text-secondary); letter-spacing:0.5px; margin-bottom:8px; text-transform:uppercase;">
+                        Api Saja</p>
+                    <h3 id="sum-safe"
+                        style="font-size:2.2rem; color:var(--accent-green-dark); font-weight:700; margin:0;">—</h3>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="card"
+                style="padding:16px 24px; display:flex; align-items:flex-end; gap:20px; border:1px solid var(--border-color); border-radius:8px; margin-bottom:24px; background:white; flex-wrap:wrap;">
+                <i class="fas fa-filter"
+                    style="color:var(--text-secondary); font-size:1.1rem; padding-bottom:10px;"></i>
+                <div>
+                    <label
+                        style="display:block; font-size:0.75rem; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">Filter
+                        by Date</label>
+                    <input type="date" id="date-filter">
+                </div>
+                <div>
+                    <label
+                        style="display:block; font-size:0.75rem; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">Status</label>
+                    <select id="status-filter"
+                        style="padding:10px 12px; border:1px solid var(--border-color); border-radius:6px; font-family:inherit; font-size:0.9rem; color:var(--text-primary); outline:none;">
+                        <option value="">All Status</option>
+                        <option value="CRITICAL">Critical</option>
+                        <option value="DANGER">Danger (Api Saja)</option>
+                        <option value="WARNING">Warning</option>
+                        <option value="SAFE">Safe</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:10px; padding-bottom:2px;">
+                    <button onclick="applyFilter()"
+                        style="padding:10px 18px; background:var(--accent-green-dark); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600; font-family:inherit;">
+                        Apply
+                    </button>
+                    <button onclick="resetFilter()"
+                        style="padding:10px 18px; background:transparent; color:var(--accent-green-dark); border:1px solid var(--accent-green-dark); border-radius:6px; cursor:pointer; font-weight:600; font-family:inherit;">
+                        Reset
+                    </button>
+                </div>
+                <p id="last-updated"
+                    style="margin-left:auto; font-size:0.78rem; color:var(--text-secondary); padding-bottom:8px;"></p>
+            </div>
+
+            <!-- Logs Table -->
+            <div class="card"
+                style="padding:0; overflow:hidden; border:1px solid var(--border-color); border-radius:8px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+                <table style="width:100%; border-collapse:collapse; text-align:left;">
+                    <thead>
+                        <tr style="background-color:#f8fafc; border-bottom:1px solid var(--border-color);">
+                            <th
+                                style="padding:16px 24px; color:var(--text-secondary); font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">
+                                Status</th>
+                            <th
+                                style="padding:16px 24px; color:var(--text-secondary); font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">
+                                Timestamp</th>
+                            <th
+                                style="padding:16px 24px; color:var(--text-secondary); font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">
+                                Temperature</th>
+                            <th
+                                style="padding:16px 24px; color:var(--text-secondary); font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">
+                                Water Level</th>
+                            <th
+                                style="padding:16px 24px; color:var(--text-secondary); font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">
+                                Node</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-tbody">
+                        <tr>
+                            <td colspan="5" style="padding:40px; text-align:center; color:var(--text-secondary);">
+                                <i class="fas fa-spinner fa-spin"></i> Memuat data...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div
+                    style="padding:16px 24px; border-top:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+                    <p id="pagination-info" style="font-size:0.85rem; color:var(--text-secondary); font-weight:500;">—
+                    </p>
+                    <div id="pagination-btns" style="display:flex; gap:8px;"></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // === State ===
+        let currentOffset = 0;
+        const LIMIT = 15;
+        let activeFilter = { status: '', tanggal: '' };
+
+        // === Fetch & Render Logs ===
+        function fetchLogs() {
+            const tbody = document.getElementById('logs-tbody');
+            tbody.innerHTML = `<tr><td colspan="5" style="padding:40px; text-align:center; color:var(--text-secondary);">
+                <i class="fas fa-spinner fa-spin"></i> Memuat data...</td></tr>`;
+
+            let url = `api_get_logs.php?limit=${LIMIT}&offset=${currentOffset}`;
+            if (activeFilter.status) url += `&status=${encodeURIComponent(activeFilter.status)}`;
+            if (activeFilter.tanggal) url += `&tanggal=${encodeURIComponent(activeFilter.tanggal)}`;
+
+            fetch(url)
+                .then(r => r.json())
+                .then(json => {
+                    if (json.status !== 'success') {
+                        tbody.innerHTML = `<tr><td colspan="5" style="padding:40px; text-align:center; color:#ef4444;">
+                            <i class="fas fa-exclamation-circle"></i> Gagal memuat data. Cek koneksi ke server XAMPP.</td></tr>`;
+                        return;
+                    }
+
+                    // Update summary cards
+                    document.getElementById('sum-total').innerText = json.summary.total_logs.toLocaleString();
+                    document.getElementById('sum-critical').innerText = json.summary.total_critical.toLocaleString();
+                    document.getElementById('sum-warning').innerText = json.summary.total_warning.toLocaleString();
+                    document.getElementById('sum-safe').innerText = json.summary.total_safe.toLocaleString();
+
+                    // Render tabel
+                    if (json.logs.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" style="padding:48px; text-align:center; color:var(--text-secondary);">
+                            <div style="font-size:2rem; margin-bottom:8px;">✅</div>
+                            <p style="font-weight:600; margin-bottom:4px;">Belum ada insiden yang terdeteksi.</p>
+                            <p style="font-size:0.8rem;">Semua pembacaan sensor dalam kondisi aman.</p>
+                        </td></tr>`;
+                    } else {
+                        tbody.innerHTML = json.logs.map(row => buildRow(row)).join('');
+                    }
+
+                    // Pagination info & tombol
+                    renderPagination(json.total, json.offset, json.limit);
+
+                    const now = new Date();
+                    document.getElementById('last-updated').innerText =
+                        'Updated: ' + now.toLocaleTimeString('id-ID');
+                })
+                .catch(err => {
+                    console.error('[PyroGuard Logs] Fetch error:', err);
+                    tbody.innerHTML = `<tr><td colspan="5" style="padding:40px; text-align:center; color:var(--text-secondary);">
+                        <i class="fas fa-plug"></i> Tidak bisa terhubung ke server. Pastikan XAMPP berjalan.</td></tr>`;
+                });
+        }
+
+        // === Build satu baris tabel ===
+        function buildRow(row) {
+            // status_api dari DB adalah integer (1=DANGER/API, 0=SAFE)
+            const apiInt = parseInt(row.status_api);
+            const suhu = parseFloat(row.suhu);
+            const cfg = statusConfig(apiInt, suhu);
+            const ts = formatTimestamp(row.created_at);
+            const suhuStr = suhu.toFixed(1);
+            const nodeId = row.node_id || 'NODE1';
+
+            // Deskripsi kejadian
+            let eventTitle = '';
+            let eventSub = '';
+            if (apiInt === 1 && suhu > 45) {
+                eventTitle = 'Fire + Suhu Ekstrem';
+                eventSub = `Api terdeteksi & suhu mencapai ${suhuStr}°C`;
+            } else if (apiInt === 1) {
+                eventTitle = 'Fire Detected!';
+                eventSub = `Sensor api aktif (suhu: ${suhuStr}°C)`;
+            } else if (suhu > 45) {
+                eventTitle = 'Extreme Temperature';
+                eventSub = `Suhu mencapai ${suhuStr}°C melebihi batas aman`;
+            } else {
+                eventTitle = 'System Safe';
+                eventSub = `Kondisi aman terverifikasi (suhu: ${suhuStr}°C)`;
+            }
+
+            // Water Level status dari gas_level (ESP Node 1)
+            const waterLvl = parseFloat(row.gas_level);
+            const waterStatus = waterLvl < 25 ? 'Low' : 'Sufficient';
+            const waterColor = waterLvl < 25 ? '#ef4444' : 'var(--accent-green-dark)';
+            const waterBg = waterLvl < 25 ? '#fef2f2' : '#f0fdf4';
+
+            // Node Name
+            let nodeName = 'Node 1';
+            if (nodeId.toUpperCase() === 'NODE2') {
+                nodeName = 'Node 2';
+            }
+
+            return `<tr class="table-row-hover" style="border-bottom:1px solid var(--border-color);">
+                <td style="padding:14px 24px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="width:8px; height:8px; border-radius:50%; background:${cfg.dot}; ${cfg.glow}"></div>
+                        <span style="font-weight:600; color:${cfg.color}; font-size:0.85rem;">${cfg.label}</span>
+                    </div>
+                </td>
+                <td style="padding:14px 24px; color:var(--text-secondary); font-size:0.85rem;">${ts}</td>
+                <td style="padding:14px 24px;">
+                    <p style="font-weight:600; color:var(--text-primary); font-size:0.9rem; margin-bottom:2px;">${eventTitle}</p>
+                    <p style="font-size:0.78rem; color:var(--text-secondary); margin:0;">${eventSub}</p>
+                </td>
+                <td style="padding:14px 24px;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span style="font-weight:600; color:var(--text-primary); font-size:0.85rem;">${waterLvl}%</span>
+                        <span style="font-size:0.75rem; font-weight:600; color:${waterColor}; background:${waterBg}; padding:2px 8px; border-radius:4px; text-transform:uppercase;">
+                            ${waterStatus}
+                        </span>
+                    </div>
+                </td>
+                <td style="padding:14px 24px; color:var(--text-secondary); font-size:0.85rem; font-weight:500;">${nodeName}</td>
+            </tr>`;
+        }
+
+        // === Konfigurasi warna per status (integer dari DB) ===
+        function statusConfig(apiInt, suhu) {
+            if (apiInt === 1 && suhu > 45) {
+                return { label: 'CRITICAL', color: '#ef4444', dot: '#ef4444', glow: 'box-shadow:0 0 5px #ef4444;', badgeBg: '#fef2f2' };
+            }
+            if (apiInt === 1) {
+                return { label: 'DANGER', color: '#ef4444', dot: '#ef4444', glow: 'box-shadow:0 0 4px #ef4444;', badgeBg: '#fef2f2' };
+            }
+            if (suhu > 45) {
+                return { label: 'WARNING', color: '#f59e0b', dot: '#f59e0b', glow: 'box-shadow:0 0 4px #f59e0b;', badgeBg: '#fffbeb' };
+            }
+            // SAFE
+            return { label: 'SAFE', color: 'var(--accent-green-dark)', dot: 'var(--accent-green-dark)', glow: 'box-shadow:0 0 4px var(--accent-green-dark);', badgeBg: '#f0fdf4' };
+        }
+
+        // === Format timestamp ===
+        function formatTimestamp(ts) {
+            if (!ts) return '—';
+            const d = new Date(ts);
+            return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
+                + ', ' + d.toLocaleTimeString('id-ID');
+        }
+
+        // === Render pagination ===
+        function renderPagination(total, offset, limit) {
+            const currentPage = Math.floor(offset / limit) + 1;
+            const totalPages = Math.ceil(total / limit);
+
+            document.getElementById('pagination-info').innerText =
+                `Showing ${offset + 1}–${Math.min(offset + limit, total)} of ${total} records`;
+
+            const container = document.getElementById('pagination-btns');
+            container.innerHTML = '';
+
+            // Previous
+            const prevBtn = document.createElement('button');
+            prevBtn.innerText = 'Previous';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.className = 'btn-action';
+            prevBtn.style.cssText = 'padding:6px 12px; border:1px solid var(--border-color); background:white; border-radius:6px; cursor:pointer; color:var(--text-secondary); font-size:0.85rem; font-weight:500;';
+            prevBtn.onclick = () => { currentOffset -= limit; fetchLogs(); };
+            container.appendChild(prevBtn);
+
+            // Nomor halaman (max 5 terlihat)
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, startPage + 4);
+            for (let p = startPage; p <= endPage; p++) {
+                const btn = document.createElement('button');
+                btn.innerText = p;
+                btn.className = 'btn-action page-btn' + (p === currentPage ? ' active' : '');
+                btn.style.cssText = 'padding:6px 12px; border:1px solid var(--border-color); background:white; border-radius:6px; cursor:pointer; font-size:0.85rem; font-weight:500;';
+                if (p === currentPage) { btn.style.background = 'var(--accent-green-dark)'; btn.style.color = 'white'; btn.style.borderColor = 'var(--accent-green-dark)'; }
+                btn.onclick = ((page) => () => { currentOffset = (page - 1) * limit; fetchLogs(); })(p);
+                container.appendChild(btn);
+            }
+
+            // Next
+            const nextBtn = document.createElement('button');
+            nextBtn.innerText = 'Next';
+            nextBtn.disabled = currentPage >= totalPages;
+            nextBtn.className = 'btn-action';
+            nextBtn.style.cssText = 'padding:6px 12px; border:1px solid var(--border-color); background:white; border-radius:6px; cursor:pointer; color:var(--text-secondary); font-size:0.85rem; font-weight:500;';
+            nextBtn.onclick = () => { currentOffset += limit; fetchLogs(); };
+            container.appendChild(nextBtn);
+        }
+
+        // === Filter ===
+        function applyFilter() {
+            currentOffset = 0;
+            activeFilter.status = document.getElementById('status-filter').value;
+            activeFilter.tanggal = document.getElementById('date-filter').value;
+            fetchLogs();
+        }
+
+        function resetFilter() {
+            currentOffset = 0;
+            activeFilter = { status: '', tanggal: '' };
+            document.getElementById('status-filter').value = '';
+            document.getElementById('date-filter').value = '';
+            fetchLogs();
+        }
+
+        function emergencyContact() {
+            alert("Emergency protocols activated. Contacting authorities.");
+        }
+
+        // === Profile Dropdown ===
+        const userProfileBtn = document.getElementById('userProfileBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+        userProfileBtn.addEventListener('click', e => { e.stopPropagation(); profileDropdown.classList.toggle('show'); });
+        window.addEventListener('click', e => { if (!userProfileBtn.contains(e.target)) profileDropdown.classList.remove('show'); });
+
+        // === Header Status Badges Update ===
+        function updateHeader() {
+            fetch('api_get_latest.php')
+                .then(res => res.json())
+                .then(json => {
+                    if (json.status === 'success') {
+                        const badge1 = document.getElementById('node1-status-badge');
+                        const badge2 = document.getElementById('node2-status-badge');
+                        let koneksi = json.data.status_koneksi;
+                        let node2Status = (koneksi === 'ONLINE') ? 1 : 0;
+
+                        if (badge1) {
+                            if (koneksi === 'ONLINE') {
+                                badge1.className = 'status-badge online';
+                                badge1.innerHTML = '<span class="status-dot"></span> NODE 1: ONLINE';
+                            } else {
+                                badge1.className = 'status-badge offline';
+                                badge1.innerHTML = '<span class="status-dot"></span> NODE 1: OFFLINE';
+                            }
+                        }
+                        if (badge2) {
+                            if (koneksi === 'ONLINE' && node2Status === 1) {
+                                badge2.className = 'status-badge online';
+                                badge2.innerHTML = '<span class="status-dot"></span> NODE 2: ONLINE';
+                            } else {
+                                badge2.className = 'status-badge offline';
+                                badge2.innerHTML = '<span class="status-dot"></span> NODE 2: OFFLINE';
+                            }
+                        }
+                    }
+                })
+                .catch(err => console.error("Error updating header status:", err));
+        }
+
+        // === Init: load saat halaman pertama buka + auto-refresh ===
+        fetchLogs();
+        updateHeader();
+        setInterval(fetchLogs, 10000);
+        setInterval(updateHeader, 2000);
+    </script>
+</body>
+
+</html>

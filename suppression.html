@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Center - PyroGuard System</title>
+    <link rel="stylesheet" href="style.css?v=4">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header class="top-header">
+        <div class="header-left">
+            <h1 class="brand-title">PyroGuard System</h1>
+            <div class="status-badges-group" style="display: flex; gap: 8px; align-items: center;">
+                <div class="status-badge online" id="node1-status-badge">
+                    <span class="status-dot"></span> NODE 1: ONLINE
+                </div>
+                <div class="status-badge online" id="node2-status-badge">
+                    <span class="status-dot"></span> NODE 2: ONLINE
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="icon-btn notification-btn">
+                <i class="far fa-bell"></i>
+                <span class="notification-indicator"></span>
+            </button>
+            <button class="icon-btn">
+                <i class="fas fa-cog"></i>
+            </button>
+            <div class="user-profile" id="userProfileBtn">
+                <div class="user-info">
+                    <p class="user-name">Dr. Nadhif Falah</p>
+                    <p class="user-role">System Admin</p>
+                </div>
+                <div class="user-avatar">
+                    <i class="far fa-user-circle"></i>
+                </div>
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="#" class="dropdown-item"><i class="far fa-user"></i> My Profile</a>
+                    <a href="#" class="dropdown-item"><i class="fas fa-sliders-h"></i> Account Settings</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="logout.php" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt"></i> Log
+                        Out</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="layout-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Control Center</h2>
+                <p id="user-node-info">Station 04 - Active</p>
+            </div>
+
+            <nav class="nav-links">
+                <a href="index.html" class="nav-item"><i class="fas fa-th-large"></i> Dashboard</a>
+                <a href="sensor_data.html" class="nav-item"><i class="fas fa-wifi"></i> Sensor Data</a>
+                <a href="suppression.html" class="nav-item active"><i class="fas fa-sliders-h"></i> Control</a>
+                <a href="incident_logs.html" class="nav-item"><i class="fas fa-history"></i> Incident Logs</a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn-emergency" onclick="emergencyStop()">
+                    <i class="fas fa-exclamation-triangle"></i> EMERGENCY STOP
+                </button>
+                <a href="#" class="footer-link"><i class="fas fa-headset"></i> Support</a>
+                <a href="#" class="footer-link"><i class="far fa-question-circle"></i> Help</a>
+            </div>
+        </aside>
+
+        <main class="suppression-container">
+            <div class="suppression-title-row">
+                <div class="unit-info">
+                    <h2>Water Suppression Unit <span>#SU-8820</span></h2>
+                    <p>Precision remote aim and spray control for automated robotic turret.</p>
+                </div>
+                <div class="status-pills">
+                    <div class="pill live"><span class="dot"></span> SYSTEM LIVE</div>
+                    <div class="pill fps"><i class="fas fa-video"></i> FPS: <span id="fps-counter">60</span></div>
+                </div>
+            </div>
+
+            <div class="card feed-card">
+                <div class="video-container">
+                    <div class="overlay-label">
+                        <div class="dot"></div> LIVE FEED
+                    </div>
+                    <div class="overlay-controls">
+                        <button class="overlay-btn"><i class="fas fa-expand"></i></button>
+                        <button class="overlay-btn"><i class="fas fa-crosshairs"></i></button>
+                    </div>
+                    <img src="lab_view.png" alt="Live Turret Camera Feed" id="live-camera-feed" style="opacity: 0.8;">
+
+                    <div
+                        style="position: absolute; bottom: 20px; left: 20px; color: rgba(255,255,255,0.8); font-family: monospace; font-size: 0.8rem;">
+                        <div id="osd-timestamp">TIMESTAMP: 20:34:57</div>
+                        <div>DATE: 29-02-01</div>
+                        <div>CAMERA ID: NW_CTRL_04</div>
+                    </div>
+
+                    <div
+                        style="position: absolute; bottom: 20px; right: 20px; text-align: right; color: rgba(255,255,255,0.8); font-family: monospace; font-size: 0.8rem;">
+                        <div>BATTERY: 100%</div>
+                        <div>STATUS: <span style="color: #4ade80;">ARMED</span></div>
+                    </div>
+
+                    <div
+                        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 1px solid rgba(255,255,255,0.5); width: 40px; height: 40px; border-radius: 50%;">
+                    </div>
+                    <div
+                        style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 4px; height: 4px; background-color: #ef4444; border-radius: 50%;">
+                    </div>
+
+                    <div
+                        style="position: absolute; top: 20px; bottom: 20px; left: 20px; right: 20px; border: 1px solid rgba(255,255,255,0.2); pointer-events: none;">
+                    </div>
+                </div>
+
+                <div class="feed-footer">
+                    <div class="angle-stats">
+                        <div class="stat-item">
+                            <div class="label">PAN ANGLE (X)</div>
+                            <div class="value" id="pan-val">90&deg;</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="label">TILT ANGLE (Y)</div>
+                            <div class="value" id="tilt-val">90&deg;</div>
+                        </div>
+                    </div>
+                    <button class="btn-activate" id="btnValve" onclick="togglePompa()">
+                        <i class="fas fa-power-off"></i> VALVE (OFF)
+                    </button>
+                </div>
+            </div>
+
+            <div class="controls-column">
+                <div class="card control-pad-card">
+                    <div class="card-header"
+                        style="width: 100%; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 20px;">
+                        <h3 class="card-title">Turret Aim Control</h3>
+                    </div>
+
+                    <div class="d-pad">
+                        <button class="pad-btn up" onclick="moveTurret('v', 'up')"><i
+                                class="fas fa-chevron-up"></i></button>
+                        <button class="pad-btn down" onclick="moveTurret('v', 'down')"><i
+                                class="fas fa-chevron-down"></i></button>
+                        <button class="pad-btn left" onclick="moveTurret('h', 'left')"><i
+                                class="fas fa-chevron-left"></i></button>
+                        <button class="pad-btn right" onclick="moveTurret('h', 'right')"><i
+                                class="fas fa-chevron-right"></i></button>
+                        <div class="pad-center">
+                            <div class="dot"></div>
+                        </div>
+                    </div>
+
+                    <div class="pad-footer-btns">
+                        <button class="btn-pad-alt active" onclick="setMode('manual')"><i
+                                class="fas fa-mouse-pointer"></i> MANUAL Aim</button>
+                        <button class="btn-pad-alt" onclick="setMode('auto')"><i class="fas fa-robot"></i> AUTO
+                            Track</button>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <div class="suppression-stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-tint"></i></div>
+                    <div class="stat-content">
+                        <div class="label">MAIN TANK LEVEL</div>
+                        <div class="value" id="water-level-display">--%</div>
+                        <div class="sub" id="water-level-sub" style="color: #ef4444;">LOW</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-lock"></i></div>
+                    <div class="stat-content">
+                        <div class="label">DOOR SOLENOID</div>
+                        <div class="value" id="solenoid-status-display" style="color: var(--text-primary);">LOCKED</div>
+                        <div class="sub" style="margin-top: 10px;">
+                            <button class="btn-secondary" id="btnSolenoidCard" onclick="toggleSolenoid()"
+                                style="width: 100%; justify-content: center; background-color: var(--status-safe-bg); color: var(--accent-green-dark); border-color: #a7f3d0;">
+                                UNLOCK DOOR
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-fire-extinguisher"></i></div>
+                    <div class="stat-content">
+                        <div class="label">MAIN PUMP</div>
+                        <div class="value" id="pump-status-display" style="color: var(--text-primary);">OFF</div>
+                        <div class="sub" style="margin-top: 10px;">
+                            <button class="btn-secondary" id="btnPompa" onclick="togglePompa()"
+                                style="width: 100%; justify-content: center; background-color: var(--status-safe-bg); color: var(--accent-green-dark); border-color: #a7f3d0;">
+                                START PUMP
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script>
+        // Simulasi update timestamp OSD
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('osd-timestamp').innerText = `TIMESTAMP: ${now.toLocaleTimeString()}`;
+        }, 1000);
+
+        // Simulasi FPS fluctuation
+        setInterval(() => {
+            const fps = Math.floor(Math.random() * (62 - 58 + 1)) + 58;
+            document.getElementById('fps-counter').innerText = fps;
+        }, 2000);
+
+        // State control
+        let isPompaOn = false;
+        let isSolenoidOn = false;
+        let currentMode = 'manual';
+
+        function updateUIFromControlData(d) {
+            if (!d) return;
+
+            // Update Mode system buttons
+            const manualBtn = document.querySelector('.pad-footer-btns .btn-pad-alt:nth-child(1)');
+            const autoBtn = document.querySelector('.pad-footer-btns .btn-pad-alt:nth-child(2)');
+            if (manualBtn && autoBtn) {
+                currentMode = d.mode_system || 'manual';
+                if (currentMode === 'auto') {
+                    manualBtn.classList.remove('active');
+                    autoBtn.classList.add('active');
+                } else {
+                    manualBtn.classList.add('active');
+                    autoBtn.classList.remove('active');
+                }
+            }
+
+            // Update Door Solenoid (status_solenoid)
+            isSolenoidOn = parseInt(d.status_solenoid) === 1;
+            const btnSolenoidCard = document.getElementById("btnSolenoidCard");
+            const solenoidStatusDisplay = document.getElementById("solenoid-status-display");
+            if (btnSolenoidCard && solenoidStatusDisplay) {
+                if (isSolenoidOn) {
+                    btnSolenoidCard.innerHTML = 'LOCK DOOR';
+                    btnSolenoidCard.style.backgroundColor = '#fef2f2';
+                    btnSolenoidCard.style.color = '#dc2626';
+                    btnSolenoidCard.style.borderColor = '#fca5a5';
+                    solenoidStatusDisplay.innerText = 'UNLOCKED';
+                    solenoidStatusDisplay.style.color = '#dc2626';
+                } else {
+                    btnSolenoidCard.innerHTML = 'UNLOCK DOOR';
+                    btnSolenoidCard.style.backgroundColor = 'var(--status-safe-bg)';
+                    btnSolenoidCard.style.color = 'var(--accent-green-dark)';
+                    btnSolenoidCard.style.borderColor = '#a7f3d0';
+                    solenoidStatusDisplay.innerText = 'LOCKED';
+                    solenoidStatusDisplay.style.color = 'var(--text-primary)';
+                }
+            }
+
+            // Update Pump (status_pompa) & sync camera feed footer VALVE button
+            isPompaOn = parseInt(d.status_pompa) === 1;
+            const btnValve = document.getElementById("btnValve");
+            if (btnValve) {
+                if (isPompaOn) {
+                    btnValve.innerHTML = '<i class="fas fa-power-off"></i> VALVE (OPEN)';
+                    btnValve.style.backgroundColor = '#dc2626'; // Merah saat terbuka/pompa aktif
+                } else {
+                    btnValve.innerHTML = '<i class="fas fa-power-off"></i> VALVE (CLOSED)';
+                    btnValve.style.backgroundColor = '#0f766e'; // Hijau normal/pompa mati
+                }
+            }
+            const btnPompa = document.getElementById("btnPompa");
+            const statusDisplay = document.getElementById("pump-status-display");
+            if (btnPompa && statusDisplay) {
+                if (isPompaOn) {
+                    btnPompa.innerHTML = 'STOP PUMP';
+                    btnPompa.style.backgroundColor = '#fef2f2';
+                    btnPompa.style.color = '#dc2626';
+                    btnPompa.style.borderColor = '#fca5a5';
+                    statusDisplay.innerText = 'RUNNING';
+                    statusDisplay.style.color = '#dc2626';
+                } else {
+                    btnPompa.innerHTML = 'START PUMP';
+                    btnPompa.style.backgroundColor = 'var(--status-safe-bg)';
+                    btnPompa.style.color = 'var(--accent-green-dark)';
+                    btnPompa.style.borderColor = '#a7f3d0';
+                    statusDisplay.innerText = 'OFF';
+                    statusDisplay.style.color = 'var(--text-primary)';
+                }
+            }
+
+            // Update PWM Slider (only if not actively drag/sliding by user to prevent jitter)
+            const slider = document.getElementById("sliderPwm");
+            const pwmValue = document.getElementById("pwmValue");
+            if (slider && pwmValue) {
+                if (document.activeElement !== slider) {
+                    slider.value = d.pwm_pompa;
+                    pwmValue.innerText = Math.round((d.pwm_pompa / 255) * 100) + "%";
+                }
+            }
+        }
+
+        function togglePompa() {
+            sendControlCommand({ pump: isPompaOn ? 0 : 1 });
+        }
+
+        function toggleSolenoid() {
+            sendControlCommand({ solenoid: isSolenoidOn ? 0 : 1 });
+        }
+
+        function updatePWM(value) {
+            let percentage = Math.round((value / 255) * 100);
+            document.getElementById("pwmValue").innerText = percentage + "%";
+            sendControlCommand({ pwm: parseInt(value) });
+        }
+
+        function setMode(mode) {
+            sendControlCommand({ mode_system: mode });
+        }
+
+        function moveTurret(axis, dir) {
+            sendControlCommand({ axis: axis, move: dir });
+        }
+
+        function resetAim() {
+            sendControlCommand({ reset: true });
+        }
+
+        // MQTT Client Setup
+        const mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
+        mqttClient.on('connect', function () {
+            console.log('[MQTT] Connected to EMQX Broker');
+        });
+        mqttClient.on('error', function (err) {
+            console.error('[MQTT] Connection error:', err);
+        });
+
+        function sendControlCommand(payload) {
+            return fetch('update_kontrol.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(response => response.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        updateUIFromControlData(res.data);
+                        // Publish updated database states via MQTT to Node 1
+                        if (mqttClient && mqttClient.connected) {
+                            const controlPayload = {
+                                mode_system: res.data.mode_system,
+                                status_pompa: parseInt(res.data.status_pompa),
+                                status_solenoid: parseInt(res.data.status_solenoid),
+                                sudut_servo: parseInt(res.data.sudut_servo)
+                            };
+                            mqttClient.publish('pyroguard/control/node1', JSON.stringify(controlPayload), { qos: 1 });
+                            console.log('[MQTT] Published control command:', controlPayload);
+                        }
+                    }
+                })
+                .catch(error => console.error('Error sending command:', error));
+        }
+
+        function emergencyStop() {
+            if (confirm("WARNING: EMERGENCY STOP will shut down all pumps and close all valves immediately. Proceed?")) {
+                sendControlCommand({ pump: 0, solenoid: 0, pwm: 0 })
+                    .then(() => alert("Emergency Stop executed."));
+            }
+        }
+
+        function updateHeader() {
+            fetch('api_get_latest.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        let d = data.data;
+
+                        // Update header badges
+                        const badge1 = document.getElementById('node1-status-badge');
+                        const badge2 = document.getElementById('node2-status-badge');
+                        if (badge1) {
+                            if (d.detik_lalu > 30) {
+                                badge1.className = 'status-badge offline';
+                                badge1.innerHTML = '<span class="status-dot"></span> NODE 1: OFFLINE';
+                            } else {
+                                badge1.className = 'status-badge online';
+                                badge1.innerHTML = '<span class="status-dot"></span> NODE 1: ONLINE';
+                            }
+                        }
+                        if (badge2) {
+                            if (parseInt(d.node2_status) === 1) {
+                                badge2.className = 'status-badge online';
+                                badge2.innerHTML = '<span class="status-dot"></span> NODE 2: ONLINE';
+                            } else {
+                                badge2.className = 'status-badge offline';
+                                badge2.innerHTML = '<span class="status-dot"></span> NODE 2: OFFLINE';
+                            }
+                        }
+
+                        // Update Telemetry Display
+                        const panValEl = document.getElementById("pan-val");
+                        const tiltValEl = document.getElementById("tilt-val");
+                        const wlEl = document.getElementById("water-level-display");
+                        const wlSubEl = document.getElementById("water-level-sub");
+
+                        if (panValEl) panValEl.innerText = (d.servo_h !== undefined ? d.servo_h : 90) + "°";
+                        if (tiltValEl) tiltValEl.innerText = (d.servo_v !== undefined ? d.servo_v : 90) + "°";
+                        if (wlEl) {
+                            let wl = d.water_level !== undefined ? parseFloat(d.water_level) : 0;
+                            wlEl.innerText = wl + "%";
+                            if (wlSubEl) {
+                                if (wl < 25) {
+                                    wlSubEl.innerText = "LOW";
+                                    wlSubEl.style.color = "#ef4444";
+                                } else {
+                                    wlSubEl.innerText = "SUFFICIENT";
+                                    wlSubEl.style.color = "var(--accent-green-dark)";
+                                }
+                            }
+                        }
+
+                        // Also load control state values dynamically to sync state across tabs/users
+                        if (d.mode_system !== undefined) {
+                            updateUIFromControlData({
+                                mode_system: d.mode_system,
+                                status_solenoid: d.solenoid_status,
+                                status_pompa: d.pump_status,
+                                pwm_pompa: d.pwm_pompa !== undefined ? d.pwm_pompa : (document.getElementById("sliderPwm") ? document.getElementById("sliderPwm").value : 0)
+                            });
+                        }
+                    }
+                })
+                .catch(err => console.error("Error fetching data:", err));
+        }
+
+        setInterval(updateHeader, 2000);
+        window.onload = function () {
+            updateHeader();
+            // Initial call to sync the exact tb_kontrol state
+            fetch('update_kontrol.php')
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        updateUIFromControlData(res.data);
+                    }
+                });
+        };
+
+        // Profile Dropdown Toggle
+        const userProfileBtn = document.getElementById('userProfileBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+
+        userProfileBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('show');
+        });
+
+        window.addEventListener('click', function (e) {
+            if (!userProfileBtn.contains(e.target)) {
+                profileDropdown.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,4 @@
+POST http://localhost/fire_project/api_post_sensor.php
+Content-Type: application/x-www-form-urlencoded
+
+node_id=Node1&suhu=50.5&gas_level=100&status_api=1
